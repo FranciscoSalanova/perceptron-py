@@ -39,32 +39,43 @@ class Perceptron(object):
         
         Returs
         -------
-        self: object
+        self: object: {
+            self.eta,
+            self.n_iter,
+            self.random_state,
+            self.w_,
+            self.errors_
+        }
         
         """
 
         random_generator = numpy.random.RandomState(self.random_state)
         self.w_ = random_generator.normal(loc = 0.0, scale = 0.01, size = 1 + x.shape[1])
 
-        self.errors_ = []
+        self.errors_ = [] # conjunto de la cantidad de errores en las distintas iteraciones
 
         for _ in range(self.n_iter):
             errors = 0
 
-            for xi, target in zip(x, y):
+            for xi, target in zip(x, y): # zip(x, y) devuelve un array con un dos elementos: xi y target
+                # Para cada par de atributos de la muestra obtenemos el valor de actualización del peso:
                 update = self.eta * (target - self.predict(xi))
-                self.w_[1:] += update * xi
+                # Luego procedemos a la actualización del vector de pesos
+                # Primero actualizando los pesos relativos a los atributos de la muestra:
+                self.w_[1:] += xi * update
+                # Segundo actualizando el sesgo:
                 self.w_[0] += update
+                # se suma un error por cada muestra que arroje un valor de actualización distinto de 0 - o sea, no la pegó el perceptron
                 errors += int(update != 0.0)
             
             self.errors_.append(errors)
         
         return self
     
-    def net_input(self, x):
-        # Calculate net input
-        return numpy.dot(x, self.w_[1:]) + self.w_[0]
-    
     def predict(self, x):
         # Return class label after unit step
         return numpy.where(self.net_input(x) >= 0.0, 1, -1)
+    
+    def net_input(self, x):
+        # Calculate net input
+        return numpy.dot(x, self.w_[1:]) + self.w_[0]
